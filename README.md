@@ -1,6 +1,8 @@
 # go-http-server-custom-write-buffer-patch
 A patch that adds a configurable `WriteBufferSize` option to the Golang HTTP server
 
+This patch has also been opened as a PR on the Golang source code repository @ https://github.com/golang/go/pull/68143
+
 ## Why this patch?
 In some situations, you may need to adjust the default hard-coded write buffer size (currently 4 KB) of the Golang HTTP server.
 
