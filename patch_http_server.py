@@ -37,14 +37,16 @@ def patcher(undo = False):
         {
             "file_path": goSrcHttpServerPath,
             "find": 'type Server struct {',
-            "replace": 'type Server struct {\n	WriteBufferSize int',
+            "replace": 'type Server struct {\n	// WriteBufferSize optionally specifies the buffer size used to write to a connection.\n	// If not set, a default value of 4 KB is used.\n	WriteBufferSize int\n',
         },
         {
             "file_path": goSrcHttpServerPath,
-            "find": 'newBufioWriterSize(checkConnErrorWriter{c}, 4<<10)',
-            "replace": 'newBufioWriterSize(checkConnErrorWriter{c}, c.server.WriteBufferSize)',
+            "find": 'c.bufw = newBufioWriterSize(checkConnErrorWriter{c}, 4<<10)',
+            "replace": 'var writeBufferSize int = 4 << 10\n	if c.server.WriteBufferSize != 0 {\n		writeBufferSize = c.server.WriteBufferSize\n	}\nc.bufw = newBufioWriterSize(checkConnErrorWriter{c}, writeBufferSize)\n',
         },
     ]
+
+    isPatching = False
 
     for patch in patches:
         filePath = patch['file_path']
@@ -52,10 +54,12 @@ def patcher(undo = False):
         with open(filePath, 'r', encoding="utf8") as file:
             filedata = file.read()
 
-        if "WriteBufferSize int" in filedata and undo == False:
+        if "WriteBufferSize int" in filedata and undo == False and isPatching == False:
             print("src/net/http/server.go is already patched. Doing nothing.")
 
             break
+
+        isPatching = True
 
         if undo == False:
             filedata = filedata.replace(patch['find'], patch['replace'])
