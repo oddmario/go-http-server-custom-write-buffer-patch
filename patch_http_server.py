@@ -6,23 +6,20 @@ import pathlib
 if os.name == 'nt':
     import pyuac
 
-def find_go_executable():
+def find_go_src():
     goBinaryPath = ""
 
-    if os.name == 'nt':
-        cmd = ["where", "go"]
-    else:
-        cmd = ["which", "go"]
+    cmd = ["go", "env", "GOROOT"]
 
     try:
         go_path = subprocess.check_output(cmd, text=True).strip().splitlines()[0]
 
-        goBinaryPath = pathlib.Path(go_path)
+        goBinaryPath = go_path
     except (subprocess.CalledProcessError, IndexError):
         pass
 
     if not goBinaryPath:
-        print("Unable to find the path of the `go` binary file. Have you appended it onto your `PATH` environment variable?")
+        print("Unable to find the path of the Golang `src` directory. Has the `go` binary path been added to your PATH environment variable?")
         sys.exit(1)
 
     return goBinaryPath
@@ -31,7 +28,7 @@ def patcher(undo = False):
     # https://github.com/golang/go/issues/13870
     # https://groups.google.com/g/golang-dev/c/OuFtcKEyGrg
 
-    goSrcHttpServerPath = os.path.join(os.path.dirname(find_go_executable()), "..", "src", "net", "http", "server.go")
+    goSrcHttpServerPath = os.path.join(find_go_src(), "src", "net", "http", "server.go")
     
     patches = [
         {
